@@ -8,6 +8,7 @@ import Pi from "@/pages/Pi";
 import Mathematicians from "@/pages/Mathematicians";
 import QuranMath from "@/pages/QuranMath";
 import Creators from "@/pages/Creators";
+import UploadFiles from "@/pages/UploadFiles";
 import NotFound from "@/pages/not-found";
 import { AppProvider } from "@/context/AppContext";
 
@@ -23,6 +24,7 @@ function App() {
           <Route path="/mathematicians" component={Mathematicians} />
           <Route path="/quran-math" component={QuranMath} />
           <Route path="/creators" component={Creators} />
+          <Route path="/upload-files" component={UploadFiles} />
           <Route component={NotFound} />
         </Switch>
       </Layout>

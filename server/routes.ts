@@ -174,17 +174,85 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ]
       };
       
+      // Check user-uploaded files in the user-uploads directory
+      const userUploadsDir = path.join(process.cwd(), 'public', 'assets', 'pdfs', 'user-uploads');
+      let userUploadedFiles: any[] = [];
+      
+      try {
+        const files = await fs.readdir(userUploadsDir);
+        const gradePrefix = `grade${grade}-`;
+        
+        // Filter files that match the grade
+        const gradeFiles = files.filter(file => file.startsWith(gradePrefix) && file.endsWith('.pdf'));
+        
+        // Map to the expected format
+        userUploadedFiles = gradeFiles.map((file, index) => {
+          // Extract chapter number from filename if it exists
+          const chapterMatch = file.match(/chapter(\d+)/i);
+          const chapterNum = chapterMatch ? chapterMatch[1] : index + 1;
+          
+          return {
+            id: Number(`${grade}5${index + 1}`), // Create a unique ID format
+            filename: `فایل کاربر: ریاضی پایه ${grade} - فصل ${chapterNum}`,
+            grade: grade,
+            url: `/assets/pdfs/user-uploads/${file}`,
+            uploadedAt: new Date().toISOString()
+          };
+        });
+      } catch (error) {
+        console.log('No user uploads directory found or error reading it:', error);
+      }
+      
       // Get pre-defined files for this grade
       const gradeFiles = defaultFiles[grade as "7" | "8" | "9"] || [];
       
-      // Also try to get any uploaded files
+      // Also try to get any uploaded files via the API
       const storedFiles = await storage.getPdfFilesByGrade(grade);
       
-      // Combine default and stored files
-      res.json([...gradeFiles, ...storedFiles]);
+      // Combine all files: default + user uploaded + stored
+      res.json([...gradeFiles, ...userUploadedFiles, ...storedFiles]);
     } catch (error) {
       console.error('Error getting PDF files:', error);
       res.status(500).json({ message: 'خطا در دریافت فایل‌ها.' });
+    }
+  });
+  
+  // API to upload PDF files directly to the public directory
+  app.post('/api/direct-upload-pdf', upload.single('pdf'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: 'فایلی آپلود نشده است.' });
+      }
+      
+      const grade = req.body.grade || '7';
+      const chapter = req.body.chapter || '1';
+      
+      // Create a filename based on grade and chapter
+      const safeFilename = `grade${grade}-chapter${chapter}-${Date.now()}.pdf`;
+      const targetPath = path.join(process.cwd(), 'public', 'assets', 'pdfs', 'user-uploads', safeFilename);
+      
+      // Move the file from temp upload to target directory
+      await fs.rename(req.file.path, targetPath);
+      
+      // Create a public URL
+      const publicUrl = `/assets/pdfs/user-uploads/${safeFilename}`;
+      
+      // Save to storage
+      const pdfFile = await storage.createPdfFile({
+        filename: `ریاضی پایه ${grade} - فصل ${chapter} (کاربر)`,
+        grade,
+        url: publicUrl,
+        uploadedAt: new Date().toISOString()
+      });
+      
+      res.json({
+        message: 'فایل با موفقیت آپلود شد.',
+        ...pdfFile,
+        directUpload: true
+      });
+    } catch (error) {
+      console.error('Error in direct upload:', error);
+      res.status(500).json({ message: 'خطا در آپلود مستقیم فایل.' });
     }
   });
 

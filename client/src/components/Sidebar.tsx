@@ -12,6 +12,7 @@ const Sidebar = () => {
     { title: "آشنایی با عدد π", path: "/pi", section: "pi" },
     { title: "معرفی ریاضی‌دانان", path: "/mathematicians", section: "mathematicians" },
     { title: "ارتباط قرآن و ریاضی", path: "/quran-math", section: "quran-math" },
+    { title: "آپلود فایل‌ها", path: "/upload-files", section: "upload-files" },
     { title: "تهیه‌کنندگان", path: "/creators", section: "creators" },
   ];
 
