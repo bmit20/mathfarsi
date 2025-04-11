@@ -100,19 +100,168 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/pdf-files/:grade', async (req, res) => {
     try {
       const grade = req.params.grade;
-      const files = await storage.getPdfFilesByGrade(grade);
-      res.json(files);
+      
+      // Default PDF files for each grade
+      const defaultFiles = {
+        "7": [
+          {
+            id: 7001,
+            filename: "ریاضی هفتم - فصل اول.pdf",
+            grade: "7",
+            url: "/assets/pdfs/grade7-chapter1.pdf",
+            uploadedAt: new Date().toISOString()
+          },
+          {
+            id: 7002,
+            filename: "ریاضی هفتم - فصل دوم.pdf",
+            grade: "7",
+            url: "/assets/pdfs/grade7-chapter2.pdf",
+            uploadedAt: new Date().toISOString()
+          },
+          {
+            id: 7003,
+            filename: "ریاضی هفتم - فصل سوم.pdf",
+            grade: "7",
+            url: "/assets/pdfs/grade7-chapter3.pdf",
+            uploadedAt: new Date().toISOString()
+          }
+        ],
+        "8": [
+          {
+            id: 8001,
+            filename: "ریاضی هشتم - فصل اول.pdf",
+            grade: "8",
+            url: "/assets/pdfs/grade8-chapter1.pdf",
+            uploadedAt: new Date().toISOString()
+          },
+          {
+            id: 8002,
+            filename: "ریاضی هشتم - فصل دوم.pdf",
+            grade: "8",
+            url: "/assets/pdfs/grade8-chapter2.pdf",
+            uploadedAt: new Date().toISOString()
+          },
+          {
+            id: 8003,
+            filename: "ریاضی هشتم - فصل سوم.pdf",
+            grade: "8",
+            url: "/assets/pdfs/grade8-chapter3.pdf",
+            uploadedAt: new Date().toISOString()
+          }
+        ],
+        "9": [
+          {
+            id: 9001,
+            filename: "ریاضی نهم - فصل اول.pdf",
+            grade: "9",
+            url: "/assets/pdfs/grade9-chapter1.pdf",
+            uploadedAt: new Date().toISOString()
+          },
+          {
+            id: 9002,
+            filename: "ریاضی نهم - فصل دوم.pdf",
+            grade: "9",
+            url: "/assets/pdfs/grade9-chapter2.pdf",
+            uploadedAt: new Date().toISOString()
+          },
+          {
+            id: 9003,
+            filename: "ریاضی نهم - فصل سوم.pdf",
+            grade: "9",
+            url: "/assets/pdfs/grade9-chapter3.pdf",
+            uploadedAt: new Date().toISOString()
+          }
+        ]
+      };
+      
+      // Get pre-defined files for this grade
+      const gradeFiles = defaultFiles[grade as "7" | "8" | "9"] || [];
+      
+      // Also try to get any uploaded files
+      const storedFiles = await storage.getPdfFilesByGrade(grade);
+      
+      // Combine default and stored files
+      res.json([...gradeFiles, ...storedFiles]);
     } catch (error) {
       console.error('Error getting PDF files:', error);
       res.status(500).json({ message: 'خطا در دریافت فایل‌ها.' });
     }
   });
 
+  // Get default quiz questions
+  app.get('/api/default-quiz', (req, res) => {
+    // Default quiz questions
+    const defaultQuestions = [
+      {
+        id: 1,
+        text: "اگر ٣ - س = ٥، مقدار س کدام است؟",
+        options: [
+          { id: 0, text: "٨" },
+          { id: 1, text: "-٨" },
+          { id: 2, text: "-٢" },
+          { id: 3, text: "٢" }
+        ],
+        correctOptionIndex: 3
+      },
+      {
+        id: 2,
+        text: "حاصل عبارت ٢^٣ × ٣^٢ کدام است؟",
+        options: [
+          { id: 0, text: "٧٢" },
+          { id: 1, text: "٣٦" },
+          { id: 2, text: "١٨" },
+          { id: 3, text: "١٠٨" }
+        ],
+        correctOptionIndex: 0
+      },
+      {
+        id: 3,
+        text: "اگر محیط مربعی ٢٠ سانتی‌متر باشد، مساحت آن چند سانتی‌متر مربع است؟",
+        options: [
+          { id: 0, text: "٢٥" },
+          { id: 1, text: "١٠٠" },
+          { id: 2, text: "٤٠٠" },
+          { id: 3, text: "٢٠" }
+        ],
+        correctOptionIndex: 0
+      },
+      {
+        id: 4,
+        text: "کدام گزینه مضرب ٧ است؟",
+        options: [
+          { id: 0, text: "٢١" },
+          { id: 1, text: "١٦" },
+          { id: 2, text: "٢٥" },
+          { id: 3, text: "٣٢" }
+        ],
+        correctOptionIndex: 0
+      },
+      {
+        id: 5,
+        text: "اگر ٥ = ٢x - ٣، مقدار x کدام است؟",
+        options: [
+          { id: 0, text: "١" },
+          { id: 1, text: "٤" },
+          { id: 2, text: "٨" },
+          { id: 3, text: "-١" }
+        ],
+        correctOptionIndex: 1
+      }
+    ];
+    
+    res.json({
+      message: 'آزمون با موفقیت بارگذاری شد.',
+      quizId: 'default',
+      questions: defaultQuestions
+    });
+  });
+
   // Parse quiz file (DOCX or XLSX)
   app.post('/api/parse-quiz', upload.single('quizFile'), async (req, res) => {
     try {
       if (!req.file) {
-        return res.status(400).json({ message: 'فایلی آپلود نشده است.' });
+        // Return default quiz questions
+        return res.redirect('/api/default-quiz');
       }
 
       const filePath = req.file.path;

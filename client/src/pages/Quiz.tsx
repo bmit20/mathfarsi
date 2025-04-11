@@ -34,6 +34,20 @@ const Quiz = () => {
       setQuizState(QuizState.QUIZ);
     },
   });
+  
+  // Fetch default quiz questions
+  const fetchDefaultQuiz = useMutation({
+    mutationFn: async () => {
+      const res = await apiRequest("GET", "/api/default-quiz");
+      return await res.json();
+    },
+    onSuccess: (data) => {
+      setQuestions(data.questions);
+      // Initialize user answers array with nulls (no answers selected)
+      setUserAnswers(new Array(data.questions.length).fill(null));
+      setQuizState(QuizState.QUIZ);
+    },
+  });
 
   const submitQuizMutation = useMutation({
     mutationFn: async (payload: { questions: QuizQuestion[], answers: (number | null)[] }) => {
@@ -139,29 +153,55 @@ const Quiz = () => {
   const renderUploadSection = () => (
     <div id="quiz-upload" className="bg-white rounded-lg shadow-sm p-6 mb-6">
       <h3 className="text-xl font-bold mb-4">بارگذاری سؤالات آزمون</h3>
-      <p className="text-gray-600 mb-6">لطفاً فایل Word (.docx) یا Excel (.xlsx) حاوی سؤالات آزمون را بارگذاری کنید.</p>
+      <p className="text-gray-600 mb-6">می‌توانید از آزمون پیش‌فرض استفاده کنید یا فایل حاوی سؤالات آزمون را بارگذاری کنید.</p>
       
-      <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mx-auto text-gray-400 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-        </svg>
-        <p className="mb-2 text-sm text-gray-600">برای بارگذاری فایل کلیک کنید یا فایل را به اینجا بکشید</p>
-        <p className="mb-4 text-xs text-gray-500">پشتیبانی از فرمت‌های Word (.docx) و Excel (.xlsx)</p>
-        <input 
-          type="file" 
-          className="hidden" 
-          accept=".docx,.xlsx" 
-          ref={fileInputRef}
-          onChange={handleFileChange}
-        />
+      {/* Default Quiz Option */}
+      <div className="bg-blue-50 p-6 rounded-lg text-center mb-6">
+        <h4 className="font-bold text-lg mb-2">استفاده از آزمون پیش‌فرض</h4>
+        <p className="text-gray-600 mb-4">برای استفاده از سؤالات پیش‌فرض آزمون ریاضی کلیک کنید.</p>
         <Button
-          variant="outline"
-          className="mt-2 bg-gray-200 hover:bg-gray-300 text-gray-700"
-          onClick={handleFileClick}
-          disabled={uploadMutation.isPending}
+          className="bg-primary hover:bg-primary-dark text-white"
+          onClick={() => fetchDefaultQuiz.mutate()}
+          disabled={fetchDefaultQuiz.isPending}
         >
-          {uploadMutation.isPending ? "در حال بارگذاری..." : "انتخاب فایل"}
+          {fetchDefaultQuiz.isPending ? "در حال بارگذاری..." : "شروع آزمون با سؤالات پیش‌فرض"}
         </Button>
+      </div>
+      
+      <div className="relative">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-gray-300"></div>
+        </div>
+        <div className="relative flex justify-center">
+          <span className="bg-white px-4 text-sm text-gray-500">یا</span>
+        </div>
+      </div>
+      
+      {/* Custom Quiz Upload */}
+      <div className="mt-6">
+        <h4 className="font-bold text-lg mb-2">بارگذاری فایل سؤالات</h4>
+        <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mx-auto text-gray-400 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+          </svg>
+          <p className="mb-2 text-sm text-gray-600">برای بارگذاری فایل کلیک کنید یا فایل را به اینجا بکشید</p>
+          <p className="mb-4 text-xs text-gray-500">پشتیبانی از فرمت‌های Word (.docx) و Excel (.xlsx)</p>
+          <input 
+            type="file" 
+            className="hidden" 
+            accept=".docx,.xlsx" 
+            ref={fileInputRef}
+            onChange={handleFileChange}
+          />
+          <Button
+            variant="outline"
+            className="mt-2 bg-gray-200 hover:bg-gray-300 text-gray-700"
+            onClick={handleFileClick}
+            disabled={uploadMutation.isPending}
+          >
+            {uploadMutation.isPending ? "در حال بارگذاری..." : "انتخاب فایل"}
+          </Button>
+        </div>
       </div>
       
       {fileName && (

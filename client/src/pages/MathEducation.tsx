@@ -71,7 +71,31 @@ const MathEducation = () => {
   };
 
   const handleViewContent = (subject: string) => {
-    // This would fetch the PDF for a specific subject
+    // Determine which PDF to show based on subject ID
+    let pdfUrl = '';
+    let pdfName = '';
+    
+    if (subject.startsWith('7-')) {
+      const chapter = subject.split('-')[1];
+      pdfUrl = `/assets/pdfs/grade7-chapter${chapter}.pdf`;
+      pdfName = `ریاضی هفتم - فصل ${chapter}`;
+    } else if (subject.startsWith('8-')) {
+      const chapter = subject.split('-')[1];
+      pdfUrl = `/assets/pdfs/grade8-chapter${chapter}.pdf`;
+      pdfName = `ریاضی هشتم - فصل ${chapter}`;
+    } else if (subject.startsWith('9-')) {
+      const chapter = subject.split('-')[1];
+      pdfUrl = `/assets/pdfs/grade9-chapter${chapter}.pdf`;
+      pdfName = `ریاضی نهم - فصل ${chapter}`;
+    }
+    
+    if (pdfUrl) {
+      setPdfUrl(pdfUrl);
+      setPdfName(pdfName);
+      setShowPdfViewer(true);
+      renderPdf(pdfUrl);
+    }
+    
     console.log(`Viewing content for: ${subject}`);
   };
 
