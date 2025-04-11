@@ -74,26 +74,62 @@ const MathEducation = () => {
     // Determine which PDF to show based on subject ID
     let pdfUrl = '';
     let pdfName = '';
+    let chapterNumber = '';
+    let gradeName = '';
     
     if (subject.startsWith('7-')) {
-      const chapter = subject.split('-')[1];
-      pdfUrl = `/assets/pdfs/grade7-chapter${chapter}.pdf`;
-      pdfName = `ریاضی هفتم - فصل ${chapter}`;
+      chapterNumber = subject.split('-')[1];
+      pdfUrl = `/assets/pdfs/grade7-chapter${chapterNumber}.pdf`;
+      pdfName = `ریاضی هفتم - فصل ${chapterNumber}`;
+      gradeName = 'هفتم';
     } else if (subject.startsWith('8-')) {
-      const chapter = subject.split('-')[1];
-      pdfUrl = `/assets/pdfs/grade8-chapter${chapter}.pdf`;
-      pdfName = `ریاضی هشتم - فصل ${chapter}`;
+      chapterNumber = subject.split('-')[1];
+      pdfUrl = `/assets/pdfs/grade8-chapter${chapterNumber}.pdf`;
+      pdfName = `ریاضی هشتم - فصل ${chapterNumber}`;
+      gradeName = 'هشتم';
     } else if (subject.startsWith('9-')) {
-      const chapter = subject.split('-')[1];
-      pdfUrl = `/assets/pdfs/grade9-chapter${chapter}.pdf`;
-      pdfName = `ریاضی نهم - فصل ${chapter}`;
+      chapterNumber = subject.split('-')[1];
+      pdfUrl = `/assets/pdfs/grade9-chapter${chapterNumber}.pdf`;
+      pdfName = `ریاضی نهم - فصل ${chapterNumber}`;
+      gradeName = 'نهم';
     }
     
     if (pdfUrl) {
       setPdfUrl(pdfUrl);
       setPdfName(pdfName);
       setShowPdfViewer(true);
-      renderPdf(pdfUrl);
+      
+      // Instead of trying to render PDFs, show placeholder content
+      const container = document.getElementById('pdf-canvas-container');
+      if (container) {
+        container.innerHTML = `
+          <div class="bg-white p-8 rounded-lg shadow-sm max-w-2xl mx-auto">
+            <h3 class="text-2xl font-bold text-center mb-6">محتوای آموزشی فصل ${chapterNumber} پایه ${gradeName}</h3>
+            <p class="text-lg mb-4 text-justify">این یک نمایش ساده برای محتوای آموزشی ریاضی است. در نسخه واقعی، اینجا محتوای فصل ${chapterNumber} کتاب ریاضی پایه ${gradeName} نمایش داده می‌شود.</p>
+            <div class="bg-gray-100 p-4 rounded-lg mb-4">
+              <h4 class="font-bold mb-2">اهداف آموزشی:</h4>
+              <ul class="list-disc pr-6">
+                <li>آشنایی با مفاهیم اصلی فصل ${chapterNumber}</li>
+                <li>حل تمرین‌های متنوع برای تقویت یادگیری</li>
+                <li>آماده‌سازی برای آزمون‌های پایانی</li>
+              </ul>
+            </div>
+            <div class="bg-gray-100 p-4 rounded-lg mb-4">
+              <h4 class="font-bold mb-2">سرفصل‌های مهم:</h4>
+              <ol class="list-decimal pr-6">
+                <li>مرور مفاهیم پایه</li>
+                <li>آشنایی با مباحث جدید</li>
+                <li>حل نمونه مسائل</li>
+                <li>تمرین‌های تکمیلی</li>
+              </ol>
+            </div>
+            <div class="flex justify-center mt-6">
+              <span class="bg-blue-100 text-blue-700 px-4 py-2 rounded-full text-sm">صفحه ${currentPage} از 5</span>
+            </div>
+          </div>
+        `;
+        setTotalPages(5); // ثابت 5 صفحه برای نمایش
+      }
     }
     
     console.log(`Viewing content for: ${subject}`);
@@ -102,12 +138,26 @@ const MathEducation = () => {
   const handlePrevPage = () => {
     if (currentPage > 1) {
       setCurrentPage(prev => prev - 1);
+      
+      // If we're showing demo content, update the page number
+      const container = document.getElementById('pdf-canvas-container');
+      const pageSpan = container?.querySelector('.bg-blue-100');
+      if (pageSpan) {
+        pageSpan.textContent = `صفحه ${currentPage - 1} از 5`;
+      }
     }
   };
 
   const handleNextPage = () => {
     if (currentPage < totalPages) {
       setCurrentPage(prev => prev + 1);
+      
+      // If we're showing demo content, update the page number
+      const container = document.getElementById('pdf-canvas-container');
+      const pageSpan = container?.querySelector('.bg-blue-100');
+      if (pageSpan) {
+        pageSpan.textContent = `صفحه ${currentPage + 1} از 5`;
+      }
     }
   };
 
